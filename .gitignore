@@ -1,0 +1,20 @@
+# Logs and outputs
+logs/
+outputs/
+*.log
+*.txt
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+
+# IDE and OS files
+.DS_Store
+.vscode/
+
+# Sensitive files (API keys in settings.py are loaded from env, but better safe)
+config/settings.py
