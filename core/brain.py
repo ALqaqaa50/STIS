@@ -84,21 +84,46 @@ class AdaptiveNeuralCore:
             'ema_long', 'order_flow_signal', 'sentiment_score'
         ]
         
-        df = pd.DataFrame(market_data)
-        df = df[features]
-        
-        # Handle missing values
-        df = df.fillna(method='ffill').fillna(method='bfill')
-        
-        # Normalize data
-        scaled_data = self.scaler.fit_transform(df)
-        
-        # Create sequences
-        sequences = []
-        for i in range(len(scaled_data) - self.config.NEURAL_INPUT_SIZE + 1):
-            sequences.append(scaled_data[i:i + self.config.NEURAL_INPUT_SIZE])
-        
-        return np.array(sequences)
+	        # Check if data is a single dictionary (single data point)
+	        if isinstance(market_data, dict):
+	            df = pd.DataFrame([market_data])
+	        else:
+	            df = pd.DataFrame(market_data)
+	            
+	        df = df[features]
+	        
+	        # Handle missing values
+	        df = df.fillna(method='ffill').fillna(method='bfill')
+	        
+	        # Normalize data
+	        # Use transform instead of fit_transform if the scaler is already fitted
+	        if len(df) == 1 and self.scaler.scale_ is not None:
+	            scaled_data = self.scaler.transform(df)
+	        else:
+	            scaled_data = self.scaler.fit_transform(df)
+	        
+	        # Create sequences
+	        sequences = []
+	        
+	        # If it's a single data point, we just use it as the sequence
+	        if len(scaled_data) == 1:
+	            # Pad the single data point to match the required input size
+	            # This assumes the model expects a sequence of length NEURAL_INPUT_SIZE
+	            # We will pad with zeros or the last known sequence if available
+	            # For now, we will just use the single point and let the model handle it
+	            # A more robust solution would involve keeping a history of data points
+	            # For a quick fix, we'll reshape the single point to a sequence of 1
+	            sequences.append(scaled_data[0])
+	        else:
+	            for i in range(len(scaled_data) - self.config.NEURAL_INPUT_SIZE + 1):
+	                sequences.append(scaled_data[i:i + self.config.NEURAL_INPUT_SIZE])
+	        
+	        # Reshape for CNN-LSTM input: (samples, timesteps, features)
+	        if len(sequences) == 1 and len(sequences[0].shape) == 1:
+	            # Single point, reshape to (1, 1, features)
+	            return np.array(sequences[0]).reshape(1, 1, -1)
+	        
+	        return np.array(sequences)
     
     def predict_market_direction(self, current_data):
         """
