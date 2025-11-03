@@ -267,7 +267,9 @@ class SuperNinjaTradingSystem:
             
             # Add technical indicators
             if technical_signals:
-                combined_data.update(technical_signals)
+                # Filter out non-numeric signals before passing to NN
+                numeric_indicators = {k: v for k, v in technical_signals.items() if isinstance(v, (int, float))}
+                combined_data.update(numeric_indicators)
             
             # Add sentiment score
             if sentiment_signals:

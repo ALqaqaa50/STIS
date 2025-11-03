@@ -79,9 +79,9 @@ class AdaptiveNeuralCore:
         Preprocess market data for neural network input
         """
         features = [
-            'close', 'volume', 'rsi', 'macd', 'signal', 
-            'bollinger_upper', 'bollinger_lower', 'ema_short', 
-            'ema_long', 'order_flow', 'sentiment_score'
+            'close', 'volume', 'rsi', 'macd', 'macd_signal_line', 
+            'bb_upper', 'bb_lower', 'ema_short', 
+            'ema_long', 'order_flow_signal', 'sentiment_score'
         ]
         
         df = pd.DataFrame(market_data)
